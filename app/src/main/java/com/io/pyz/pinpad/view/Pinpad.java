@@ -15,23 +15,24 @@ import java.util.Random;
 public class Pinpad extends View{
 
     private final static int MSG_UNSELECTED = -1;
-    private final static int MSG_BACKSPACE = 3;
+    private final static int MSG_CANCEL = 7;
     private final static int MSG_ENTER = 11;
+    private final static int MSG_BACKSPACE = 3;
     private Paint tablePaint = new Paint();
     private Paint keyPaint = new Paint();
     private int[] numBuffer = new int[10];
     private int baseLineY = 0;
-    private int startX = 20;
-    private int startY = 20;
-    private int height = 150;
-    private int width = 230;
+    private int startX = 16;
+    private int startY = 16;
+    private int height;
+    private int width;
     private int startInputKeyX = startX;
     private int startInputKeyY = startY + height;
     private int selectCount = MSG_UNSELECTED;
     private StringBuilder password = new StringBuilder();
     private StringBuilder passwordValue = new StringBuilder();
 //    private OnItemSelectListener onItemSelectListener = null;
-
+    private OnFinishListener onFinishListener = null;
 
     public Pinpad(Context context) {
         super(context);
@@ -93,7 +94,22 @@ public class Pinpad extends View{
                 password.deleteCharAt(password.length()-1);
                 passwordValue.deleteCharAt(passwordValue.length()-1);
                 break;
+            case MSG_CANCEL:
+                password.delete(0, password.length());
+                passwordValue.delete(0, passwordValue.length());
+                if(onFinishListener != null){
+                    onFinishListener.onFinish(-1, "USER CANCEL!");
+                }
+                break;
             case MSG_ENTER:
+                if(password.length() < 6){
+                    return;
+                }
+                if(onFinishListener != null){
+                    onFinishListener.onFinish(0, passwordValue.toString());
+                }
+                password.delete(0, password.length());
+                passwordValue.delete(0, passwordValue.length());
                 break;
             default:
                 if(password.length() >= 6){
@@ -116,9 +132,24 @@ public class Pinpad extends View{
 //        this.onItemSelectListener = listener;
 //    }
 
+    public interface OnFinishListener{
+        public void onFinish(int returnCode, String password);
+    }
+
+    public void setOnFinishListener(OnFinishListener listener){
+        this.onFinishListener = listener;
+    }
+
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
+
+        int totalWidth = getMeasuredWidth();
+        int totalHeight = getMeasuredHeight();
+        width = (totalWidth - 2 * startX) / 4;
+        height = (totalHeight - 2 * startY) / 5;
+        startInputKeyX = startX;
+        startInputKeyY = startY + height;
 
         // 画框
         canvas.drawRect(
@@ -144,7 +175,7 @@ public class Pinpad extends View{
             }
         }
 
-        if(selectCount == 3){
+        if(selectCount == MSG_BACKSPACE){
             tablePaint.setStyle(Paint.Style.FILL_AND_STROKE);
         } else {
             tablePaint.setStyle(Paint.Style.STROKE);
@@ -153,10 +184,23 @@ public class Pinpad extends View{
                 startInputKeyX + 3 * width,
                 startInputKeyY,
                 startInputKeyX + 4 * width,
+                startInputKeyY + height,
+                tablePaint);
+
+        if(selectCount == MSG_CANCEL){
+            tablePaint.setStyle(Paint.Style.FILL_AND_STROKE);
+        } else {
+            tablePaint.setStyle(Paint.Style.STROKE);
+        }
+        canvas.drawRect(
+                startInputKeyX + 3 * width,
+                startInputKeyY + height,
+                startInputKeyX + 4 * width,
                 startInputKeyY + 2 * height,
                 tablePaint);
 
-        if(selectCount == 11){
+
+        if(selectCount == MSG_ENTER){
             tablePaint.setStyle(Paint.Style.FILL_AND_STROKE);
         } else {
             tablePaint.setStyle(Paint.Style.STROKE);
@@ -196,7 +240,13 @@ public class Pinpad extends View{
         canvas.drawText(
                 "回退",
                 startInputKeyX + 3 * width + width / 2,
-                startInputKeyY + height - baseLineY,
+                startInputKeyY + height / 2 - baseLineY,
+                keyPaint);
+
+        canvas.drawText(
+                "取消",
+                startInputKeyX + 3 * width + width / 2,
+                startInputKeyY + height + height / 2 - baseLineY,
                 keyPaint);
 
         canvas.drawText(
@@ -211,14 +261,14 @@ public class Pinpad extends View{
         if(MotionEvent.ACTION_DOWN == event.getAction()){
             float x = event.getX();
             float y = event.getY();
+            if(x < startInputKeyX || y < startInputKeyY){
+                return true;
+            }
             int selectColumn = (int)((x - startInputKeyX) / width);
             int selectRow = (int)((y - startInputKeyY) / height);
             selectCount = 4 * selectRow + selectColumn;
             if(selectCount == 12 || selectCount == 14 || selectCount > 15){
                 selectCount = MSG_UNSELECTED;
-            }
-            if(selectCount == 7){
-                selectCount = MSG_BACKSPACE;
             }
             if(selectCount == 15){
                 selectCount = MSG_ENTER;

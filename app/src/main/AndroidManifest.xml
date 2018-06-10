@@ -17,7 +17,7 @@
             </intent-filter>
         </activity>
         <activity android:name=".PinpadActivity"
-            android:theme="@android:style/Theme.Translucent.NoTitleBar.Fullscreen">
+            android:theme="@android:style/Theme.Translucent.NoTitleBar">
 
         </activity>
     </application>

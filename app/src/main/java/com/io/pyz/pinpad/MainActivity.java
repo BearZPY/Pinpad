@@ -14,10 +14,6 @@ import butterknife.OnClick;
 
 public class MainActivity extends AppCompatActivity {
 
-    private Toast toast = null;
-
-    @BindView(R.id.tv_show_result)
-    TextView tvShowResult;
 
     @BindView(R.id.bt_input_password)
     Button btInputPassword;
@@ -33,11 +29,6 @@ public class MainActivity extends AppCompatActivity {
     @OnClick(R.id.bt_input_password)
     public void onViewClicked(View v){
         if(v.getId() == R.id.bt_input_password){
-            if(toast != null){
-                toast.cancel();
-            }
-            toast = Toast.makeText(this.getApplicationContext(), "请输入密码", Toast.LENGTH_SHORT);
-            toast.show();
 
             Intent intent = new Intent(this, PinpadActivity.class);
             startActivity(intent);
