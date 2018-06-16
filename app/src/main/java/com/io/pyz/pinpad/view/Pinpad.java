@@ -133,7 +133,7 @@ public class Pinpad extends View{
 //    }
 
     public interface OnFinishListener{
-        public void onFinish(int returnCode, String password);
+        void onFinish(int returnCode, String password);
     }
 
     public void setOnFinishListener(OnFinishListener listener){
@@ -251,30 +251,39 @@ public class Pinpad extends View{
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        if(MotionEvent.ACTION_DOWN == event.getAction()){
-            float x = event.getX();
-            float y = event.getY();
-            if(x < startInputKeyX || y < startInputKeyY){
-                return true;
-            }
-            int selectColumn = (int)((x - startInputKeyX) / width);
-            int selectRow = (int)((y - startInputKeyY) / height);
-            selectCount = 4 * selectRow + selectColumn;
-            if(selectCount == 12 || selectCount == 14 || selectCount > 15){
+        switch(event.getAction()) {
+            case MotionEvent.ACTION_DOWN:
+                performClick();
+                float x = event.getX();
+                float y = event.getY();
+                if(x < startInputKeyX || y < startInputKeyY){
+                    return true;
+                }
+                int selectColumn = (int)((x - startInputKeyX) / width);
+                int selectRow = (int)((y - startInputKeyY) / height);
+                selectCount = 4 * selectRow + selectColumn;
+                if(selectCount == 12 || selectCount == 14 || selectCount > 15){
+                    selectCount = MSG_UNSELECTED;
+                }
+                if(selectCount == 15){
+                    selectCount = MSG_ENTER;
+                }
+                passwordHandle(3 * selectRow + selectColumn);
+                invalidate();
+                break;
+            case MotionEvent.ACTION_UP:
+            case MotionEvent.ACTION_CANCEL:
                 selectCount = MSG_UNSELECTED;
-            }
-            if(selectCount == 15){
-                selectCount = MSG_ENTER;
-            }
-            passwordHandle(3 * selectRow + selectColumn);
-            invalidate();
-            return true;
+                invalidate();
+                break;
+            default:
+                break;
         }
-        if(MotionEvent.ACTION_UP == event.getAction()){
-            selectCount = MSG_UNSELECTED;
-            invalidate();
-            return true;
-        }
-        return super.onTouchEvent(event);
+        return true;
+    }
+
+    @Override
+    public boolean performClick() {
+        return super.performClick();
     }
 }
