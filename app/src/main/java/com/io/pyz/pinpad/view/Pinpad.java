@@ -139,80 +139,57 @@ public class Pinpad extends View{
     public void setOnFinishListener(OnFinishListener listener){
         this.onFinishListener = listener;
     }
-
-    @Override
-    protected void onDraw(Canvas canvas) {
-        super.onDraw(canvas);
-
-        int totalWidth = getMeasuredWidth();
-        int totalHeight = getMeasuredHeight();
-        width = (totalWidth - 2 * startX) / 4;
-        height = (totalHeight - 2 * startY) / 5;
-        startInputKeyX = startX;
-        startInputKeyY = startY + height;
-
-        // 画框
+    
+    private void drawBaseTable(Canvas canvas) {
         canvas.drawRect(
-                startX,
-                startY,
-                startX + 4 * width,
-                startInputKeyY,
-                tablePaint);
+        startX, startY,
+        startX + 4 * width, startY + 5 * height, tablePaint);
+        float[] points = {
+                // 画行
+                startX, startY + height, startX + 4 * width, startY + height,
+                startX, startY + 2 * height, startX + 4 * width, startY + 2 * height,
+                startX, startY + 3 * height, startX + 4 * width, startY + 3 * height,
+                startX, startY + 4 * height, startX + 3 * width, startY + 4 * height,
+                // 画列
+                startX + width, startY + height, startX + width, startY + 5 * height,
+                startX + 2 * width, startY + height, startX + 2 * width, startY + 5 * height,
+                startX + 3 * width, startY + height, startX + 3 * width, startY + 5 * height,
+        };
 
-        for(int i = 0; i < 4; i++) {
-            for(int j = 0; j < 3; j++){
-                if(selectCount == (4 * i + j)){
-                    tablePaint.setStyle(Paint.Style.FILL_AND_STROKE);
-                } else {
-                    tablePaint.setStyle(Paint.Style.STROKE);
-                }
+        canvas.drawLines(points, tablePaint);
+    }
+
+    private void drawSelectTable(Canvas canvas, int selectCount) {
+        int selectColumn = selectCount / 4;
+        int selectRow = selectCount % 4;
+
+        switch (selectCount) {
+            case MSG_UNSELECTED:
+                break;
+            case MSG_ENTER:
+                tablePaint.setStyle(Paint.Style.FILL_AND_STROKE);
                 canvas.drawRect(
-                        startInputKeyX + j * width,
-                        startInputKeyY + i * height,
-                        startInputKeyX + (j + 1) * width,
-                        startInputKeyY + (i + 1) * height,
+                        startInputKeyX + selectRow * width,
+                        startInputKeyY + selectColumn * height,
+                        startInputKeyX + (selectRow + 1)  * width,
+                        startInputKeyY + + (selectColumn + 2)  * height,
                         tablePaint);
-            }
+                tablePaint.setStyle(Paint.Style.STROKE);
+                break;
+            default:
+                tablePaint.setStyle(Paint.Style.FILL_AND_STROKE);
+                canvas.drawRect(
+                        startInputKeyX + selectRow * width,
+                        startInputKeyY + selectColumn * height,
+                        startInputKeyX + (selectRow + 1)  * width,
+                        startInputKeyY + + (selectColumn + 1)  * height,
+                        tablePaint);
+                tablePaint.setStyle(Paint.Style.STROKE);
+                break;
         }
+    }
 
-        if(selectCount == MSG_BACKSPACE){
-            tablePaint.setStyle(Paint.Style.FILL_AND_STROKE);
-        } else {
-            tablePaint.setStyle(Paint.Style.STROKE);
-        }
-        canvas.drawRect(
-                startInputKeyX + 3 * width,
-                startInputKeyY,
-                startInputKeyX + 4 * width,
-                startInputKeyY + height,
-                tablePaint);
-
-        if(selectCount == MSG_CANCEL){
-            tablePaint.setStyle(Paint.Style.FILL_AND_STROKE);
-        } else {
-            tablePaint.setStyle(Paint.Style.STROKE);
-        }
-        canvas.drawRect(
-                startInputKeyX + 3 * width,
-                startInputKeyY + height,
-                startInputKeyX + 4 * width,
-                startInputKeyY + 2 * height,
-                tablePaint);
-
-
-        if(selectCount == MSG_ENTER){
-            tablePaint.setStyle(Paint.Style.FILL_AND_STROKE);
-        } else {
-            tablePaint.setStyle(Paint.Style.STROKE);
-        }
-        canvas.drawRect(
-                startInputKeyX + 3 * width,
-                startInputKeyY + 2 * height,
-                startInputKeyX + 4 * width,
-                startInputKeyY + 4 * height,
-                tablePaint);
-        tablePaint.setStyle(Paint.Style.STROKE);
-
+    private void drawKeyValue(Canvas canvas) {
         // 填充值
         canvas.drawText(
                 password.toString(),
@@ -254,6 +231,22 @@ public class Pinpad extends View{
                 startInputKeyX + 3 * width + width / 2,
                 startInputKeyY +  3 * height- baseLineY,
                 keyPaint);
+    }
+
+    @Override
+    protected void onDraw(Canvas canvas) {
+        super.onDraw(canvas);
+
+        int totalWidth = getMeasuredWidth();
+        int totalHeight = getMeasuredHeight();
+        width = (totalWidth - 2 * startX) / 4;
+        height = (totalHeight - 2 * startY) / 5;
+        startInputKeyX = startX;
+        startInputKeyY = startY + height;
+
+        drawBaseTable(canvas);
+        drawSelectTable(canvas, selectCount);
+        drawKeyValue(canvas);
     }
 
     @Override
