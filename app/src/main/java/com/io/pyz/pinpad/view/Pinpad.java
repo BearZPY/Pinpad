@@ -172,7 +172,7 @@ public class Pinpad extends View{
                         startInputKeyX + selectRow * width,
                         startInputKeyY + selectColumn * height,
                         startInputKeyX + (selectRow + 1)  * width,
-                        startInputKeyY + + (selectColumn + 2)  * height,
+                        startInputKeyY + (selectColumn + 2)  * height,
                         tablePaint);
                 tablePaint.setStyle(Paint.Style.STROKE);
                 break;
@@ -182,7 +182,7 @@ public class Pinpad extends View{
                         startInputKeyX + selectRow * width,
                         startInputKeyY + selectColumn * height,
                         startInputKeyX + (selectRow + 1)  * width,
-                        startInputKeyY + + (selectColumn + 1)  * height,
+                        startInputKeyY + (selectColumn + 1)  * height,
                         tablePaint);
                 tablePaint.setStyle(Paint.Style.STROKE);
                 break;
